@@ -36,3 +36,34 @@ jobs:
           build-root-directory: ${{ inputs.build-root-dir }}
           gradle-executable: ./gradlew
           gradle-version: 8.9
+
+      # Add this new step to package builds from Linux runners
+      - name: Upload Linux Packages
+        if: runner.os == 'Linux' && inputs.name == 'Bisq'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages-${{ github.run_id }}
+          path: |
+            ${{ inputs.build-root-dir }}/build/packaging/jpackage/packages/*.deb
+            ${{ inputs.build-root-dir }}/build/packaging/jpackage/packages/*.rpm
+            ${{ inputs.build-root-dir }}/build/packaging/jpackage/packages/aur/**
+          retention-days: 7
+
+      # Similarly for macOS and Windows packages if needed
+      - name: Upload macOS Packages
+        if: runner.os == 'macOS' && inputs.name == 'Bisq'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-packages-${{ github.run_id }}
+          path: ${{ inputs.build-root-dir }}/build/packaging/jpackage/packages/*.dmg
+          retention-days: 7
+
+      - name: Upload Windows Packages
+        if: runner.os == 'Windows' && inputs.name == 'Bisq'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-packages-${{ github.run_id }}
+          path: |
+            ${{ inputs.build-root-dir }}/build/packaging/jpackage/packages/*.exe
+            ${{ inputs.build-root-dir }}/build/packaging/jpackage/packages/*.msi
+          retention-days: 7
