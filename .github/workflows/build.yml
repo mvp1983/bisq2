@@ -10,37 +10,62 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build ${{ inputs.name }} on ${{ inputs.os }}
-    runs-on: ${{ inputs.os }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4.2.0
-        with:
-          submodules: 'true'
+  build_bisq:
+    name: Build Bisq on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
 
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4.7.0
-        with:
-          java-version: '21'
-          distribution: 'zulu'
+    uses: ./.github/workflows/build_bisq_module.yml
+    with:
+      os: ${{ matrix.os }}
+      name: Bisq
+      build-root-dir: .
 
-      - name: Gradle Build Action
-        uses: gradle/gradle-build-action@v3.5.0
-        with:
-          arguments: build -x test
-          build-root-directory: ${{ inputs.build-root-dir }}
-          gradle-executable: ./gradlew
-          gradle-version: 8.9
+  build_apps_module:
+    name: Build apps module on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
 
-      # Add this new step to upload Linux packages
-      - name: Upload Linux packages
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-packages
-          path: |
-            ${{ inputs.build-root-dir }}/build/packaging/jpackage/packages/*.deb
-            ${{ inputs.build-root-dir }}/build/packaging/jpackage/packages/*.rpm
-            ${{ inputs.build-root-dir }}/build/packaging/jpackage/packages/aur/
-          retention-days: 7
+    uses: ./.github/workflows/build_bisq_module.yml
+    with:
+      os: ${{ matrix.os }}
+      name: apps module
+      build-root-dir: apps
+
+  build_network_module:
+    name: Build network module on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
+
+    uses: ./.github/workflows/build_bisq_module.yml
+    with:
+      os: ${{ matrix.os }}
+      name: network module
+      build-root-dir: network
+
+  build_tor_module:
+    name: Build tor module on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
+
+    uses: ./.github/workflows/build_bisq_module.yml
+    with:
+      os: ${{ matrix.os }}
+      name: tor module
+      build-root-dir: network/tor
+
+  build_wallet_module:
+    name: Build wallet module on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macOS-latest, windows-latest ]
+
+    uses: ./.github/workflows/build_bisq_module.yml
+    with:
+      os: ${{ matrix.os }}
+      name: wallet module
+      build-root-dir: wallets
